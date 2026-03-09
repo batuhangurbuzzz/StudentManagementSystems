@@ -1,8 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/layouts/AuthLayout.vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage,router } from '@inertiajs/vue3';
 import MagnifyingGlass from '@/components/Icons/MagnifyingGlass.vue';
 import Pagination from '@/components/Pagination.vue';
+import { computed, ref,watch } from 'vue';
 
 defineProps({
     students: {
@@ -10,6 +11,27 @@ defineProps({
         required: true
     }
 });
+
+let search = ref(usePage().props.search), pageNumber = ref(1);
+
+let studentsUrl = computed(() => {
+    let url = new URL(route("students.index"));
+    url.searchParams.append("page", pageNumber.value);
+
+    if(search.value){
+        url.searchParams.append("search", search.value);
+    }
+
+    return url;
+});
+
+watch(() => studentsUrl.value, (updatedStudentsUrl) => {
+    router.visit(updatedStudentsUrl, {
+        preserveScroll: true,
+        preserveState: true,
+        replace: true,
+    });
+})
 
 const deleteForm = useForm();
 
@@ -55,7 +77,7 @@ const deleteStudent = (studentId) => {
 
                         <input
                             type="text"
-                            v-model="searchTerm"
+                            v-model="search"
                             placeholder="Search students data..."
                             id="search"
                             class="block rounded-lg border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
